@@ -2,6 +2,21 @@
 
 This script simplifies the process of creating a new private GitHub repository from your local directory. It automates the steps of initializing a Git repository, adding files, making an initial commit, and pushing it to GitHub.
 
+## Usage
+
+You can execute the script by running:
+```bash
+gitsetup my-new-repo
+```
+
+OR
+
+```bash
+/path/to/your/script/git_setup.sh my-new-repo
+```
+
+If you didn't set up the alias.
+
 ## How It Works
 
 1. **Checking for Repository Name**: The script checks if you provide a repository name as an argument. If not, it will prompt you to provide one.
