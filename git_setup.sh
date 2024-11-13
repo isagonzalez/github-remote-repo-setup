@@ -63,7 +63,7 @@ remote_url=$(echo $response | jq -r '.clone_url')
 echo "URL: $remote_url"
 
 # initialise the local repo
-git init
+git init -b main
 
 # add all existing files to the staging area
 git add .
