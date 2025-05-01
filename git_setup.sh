@@ -1,6 +1,24 @@
-# checking if the repo name was given
-if [ "$#" -ne 1 ]; then
-	echo "Usage: $0 <remote-repo-name>"
+#!/bin/bash
+
+# help function
+show_help() {
+	echo "Usage: gitsetup <remote-repo-name> [-p | --public]"
+	echo ""
+	echo "Options:"
+	echo "\t-p, --public    Create a public repository (default is private)"
+	echo "\t-h, --help      Show this help message"
+	exit 0
+}
+
+# checking for help message
+if [[ "$1" == "-h"  || "$1" == "--help" ]]; then
+	show_help
+fi
+
+# checking for proper usage
+if [ "$#" -lt 1 ] || [ "$#" -ge 2]; then
+	echo "Error: incorrect usage."
+	echo "Run 'gitsetup --help' for usage instructions."
 	exit 1
 fi
 
@@ -27,6 +45,13 @@ fi
 # saving the repo name in a variable
 repo_name=$1
 
+# set default to private
+private_repo="true"
+
+if [[ "$2" == "-p" || "$2" == "--public" ]]; then
+	private_repo="false"
+fi
+
 # getting the token
 TOKEN=$GITHUB_TOKEN
 
@@ -36,7 +61,7 @@ response=$(curl -L \
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer $TOKEN" \
               https://api.github.com/user/repos \
-              -d "{\"name\":\"$repo_name\",\"private\":true}")
+              -d "{\"name\":\"$repo_name\",\"private\":$private_repo}")
 
 # getting the message
 error_message=$(echo $response | jq -r '.message')
