@@ -89,23 +89,16 @@ response=$(curl -L \
               https://api.github.com/user/repos \
               -d "{\"name\":\"$repo_name\",\"private\":$private_repo}")
 
-# getting the message
-error_message=$(echo $response | jq -r '.message')
-
-# if there's an error message, let the user know and exit
+# check for errors
+error_message=$(echo "$response" | jq -r '.message')
 if [[ "$error_message" != "null" ]]; then
-	# checking for specific errors
-	specific_errors=$(echo $response | jq -r '.errors')
-
-	# if there's a specific error message, print that
-	if [[ ! -z $specific_errors ]]; then
-		specific_error_message=$(echo $response | jq -r '.errors[0].message')
-		echo "Error: $specific_error_message"
-	else
-		echo "Error: $error_message"
-	fi
-
-	exit 1
+    specific_error=$(echo "$response" | jq -r '.errors[0].message // empty')
+    if [[ -n "$specific_error" ]]; then
+        echo "❌ GitHub API error: $specific_error"
+    else
+        echo "❌ GitHub error: $error_message"
+    fi
+    exit 1
 fi
 
 # geting the url from the response
