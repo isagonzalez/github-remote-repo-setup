@@ -2,64 +2,83 @@
 
 # help function
 show_help() {
-	echo "Usage: gitsetup <remote-repo-name> [-p | --public]"
+	echo "Usage: gitsetup [repo-name] [-p | --public]"
 	echo ""
 	echo "Options:"
+	echo "\trepo-name       Name of the GitHub repo (defaults to current directory name)"
 	echo "\t-p, --public    Create a public repository (default is private)"
 	echo "\t-h, --help      Show this help message"
 	exit 0
 }
 
-# checking for help message
-if [[ "$1" == "-h"  || "$1" == "--help" ]]; then
-	show_help
-fi
+# defaults
+repo_name=""
+private_repo="true"
+args=("$@")
 
-# checking for proper usage
-if [ "$#" -lt 1 ] || [ "$#" -ge 2]; then
-	echo "Error: incorrect usage."
-	echo "Run 'gitsetup --help' for usage instructions."
-	exit 1
+# parse arguments
+while [[ "$#" -gt 0 ]]; do
+	case "$1" in
+		-h|--help)
+			show_help
+			;;
+		-p|--public)
+			private_repo="false"
+			;;
+		-*)
+			echo "❌ Unknown option: $1"
+			echo "Run 'gitsetup --help' for usage information."
+			exit 1
+			;;
+		*)
+			if [[ -z "$repo_name" ]]; then
+				repo_name="$1"
+			else
+				echo "❌ Unexpected argument: $1"
+				echo "Run 'gitsetup --help' for usage information."
+				exit 1
+			fi
+			;;
+	esac
+	shift
+done
+
+# if no repo name is provided
+if [[ -z "$repo_name" ]]; then
+	repo_name=$(basename "$PWD")
+	echo "ℹ️  No repo name provided. Defaulting to current directory: '$repo_name'"
 fi
 
 # getting current path
 current_path=$(pwd)
-
-# do not move forward if they're creating the repo in the home folder
 home_path="$HOME"
 
+# do not move forward if they're creating the repo in the home folder
 if [ "$current_path" == "$home_path" ]; then
-	echo "Warning: Cannot create local repo at $home_path, navigate to the correct directory"
+	echo "⚠️ Cannot create repo in the home folder. Navigate to a project directory first."
 	exit 1
 fi
 
 # double checking repo location with user
-read -p "You are at $current_path, are you sure you would like to create the repo here? (y/n): " correct_path
+read -p "You are at $current_path. Would you like to create the repo here? (y/n): " correct_path
 
-# if they say anything else aart from "y", exit
+# if they say anything else apart from "y", exit
 if [[ $(echo "$correct_path" | tr '[:upper:]' '[:lower:]') != "y" ]]; then
-	echo "Warning: Change directories and try again"
+	echo "⚠️ Change directories and try again."
 	exit 1
 fi
 
-# saving the repo name in a variable
-repo_name=$1
-
-# set default to private
-private_repo="true"
-
-if [[ "$2" == "-p" || "$2" == "--public" ]]; then
-	private_repo="false"
+# check for github token
+if [[ -z "$GITHUB_TOKEN" ]]; then
+	echo "❌ GITHUB_TOKEN is not set in the environment."
+	exit 1
 fi
-
-# getting the token
-TOKEN=$GITHUB_TOKEN
 
 # creating a github repo
 response=$(curl -L \
               -X POST \
               -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer $TOKEN" \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
               https://api.github.com/user/repos \
               -d "{\"name\":\"$repo_name\",\"private\":$private_repo}")
 
@@ -82,10 +101,9 @@ if [[ "$error_message" != "null" ]]; then
 	exit 1
 fi
 
-
 # geting the url from the response
 remote_url=$(echo $response | jq -r '.clone_url')
-echo "URL: $remote_url"
+echo "✅ GitHub repo created: $remote_url"
 
 # initialise the local repo
 git init -b main
