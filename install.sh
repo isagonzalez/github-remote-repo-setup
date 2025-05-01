@@ -11,10 +11,16 @@ SCRIPT_URL="https://raw.githubusercontent.com/isagonzalez/github-remote-repo-set
 mkdir -p "$INSTALL_DIR"
 
 # download the script to the location
+if [ -f "$INSTALL_DIR/$SCRIPT_NAME" ]; then
+  echo "🔄 Updating '$SCRIPT_NAME'..."
+else
+  echo "⬇️  Installing '$SCRIPT_NAME'..."
+fi
+
 curl -sL "$SCRIPT_URL" -o "$INSTALL_DIR/$SCRIPT_NAME"
 chmod +x "$INSTALL_DIR/$SCRIPT_NAME"
 
-echo "✅ Installed '$SCRIPT_NAME' to $INSTALL_DIR"
+echo "✅ '$SCRIPT_NAME' is now up to date in $INSTALL_DIR"
 
 # checking shell
 SHELL_NAME=$(basename "$SHELL")

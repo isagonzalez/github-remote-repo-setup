@@ -1,5 +1,7 @@
 #!/bin/bash
 
+VERSION="1.0.0"
+
 # help function
 show_help() {
 	echo "Usage: gitsetup [repo-name] [-p | --public]"
@@ -8,6 +10,7 @@ show_help() {
 	echo "\trepo-name       Name of the GitHub repo (defaults to current directory name)"
 	echo "\t-p, --public    Create a public repository (default is private)"
 	echo "\t-h, --help      Show this help message"
+	echo "\t-v, --version   Show the version number"
 	exit 0
 }
 
@@ -24,6 +27,10 @@ while [[ "$#" -gt 0 ]]; do
 			;;
 		-p|--public)
 			private_repo="false"
+			;;
+		-v|--version)
+			echo "gitsetup $VERSION"
+			exit 0
 			;;
 		-*)
 			echo "❌ Unknown option: $1"
